@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url 'https://jitpack.io'
+            content {
+                excludeGroupByRegex "com\\.github\\.ben-manes.*"
+            }
+        }
+        maven { url "https://storage.googleapis.com/r8-releases/raw/master" }
+    }
+    dependencies {
+        classpath(libs.android.r8)
+        classpath libs.android.gradlePlugin
+        classpath libs.androidx.navigation.safeArgsGradlePlugin
+        classpath libs.ktlint
+    }
+}
+
+plugins {
+    alias libs.plugins.org.jetbrains.kotlin.android apply false
+    alias libs.plugins.org.jetbrains.kotlin.plugin.parcelize apply false
+    alias libs.plugins.ksp apply false
+    alias libs.plugins.com.github.benmanes.versions
+}
+
+ext {
+    applicationName = "com.example.testsimplepredi"
+
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    minSdkVersion = 24
+    compileSdk = 34
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    kotlinOptionsJVMTarget = "17"
+    kotlinJVMToolchain = 17
+}
+
+allprojects {
+    apply plugin: "org.jlleitschuh.gradle.ktlint"
+
+    ktlint {
+        verbose = true
+        android = true
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
+}
+
+/**
+ * These help filter the dependencyUpdates task results to not include alpha, pre-release, etc.
+ */
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
+}
