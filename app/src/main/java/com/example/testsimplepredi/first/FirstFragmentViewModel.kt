@@ -19,6 +19,8 @@ class FirstFragmentViewModel constructor(
 
 ) : BaseViewModel<UiEvent, UIState, UiEffect>() {
 
+
+
     init {
         setState {
             copy(
